@@ -15,3 +15,5 @@ spec:
          - "-c"
          - "date"
       restartPolicy: Never
+      #Used for a batch update or alike - one time operations
+      #you do not want the pod up, once it (container within) has exited the job successfully
