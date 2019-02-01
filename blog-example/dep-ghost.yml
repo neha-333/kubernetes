@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: blog-ghost-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: blog-ghost
+    spec:
+      containers:
+      - name: ghost
+        image: ghost:1-alpine 
+        ports:
+        - name: blog-ghost-port
+          containerPort: 2368
+        env:
+        - name: database__connection__host
+          valueFrom:
+            configMapKeyRef: #might as well add all configs to this
+              name: blog-config
+              key: dbhost
+        - name: database__client
+          value: mysql
+        - name: database__connection__user
+          value: root
+        - name: database__connection__password
+          valueFrom:
+            secretKeyRef:
+              name: blog-secrets
+              key: db-password
+        - name: database__connection__database
+          value: ghost
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blog-ghost-svc
+spec:
+  ports:
+  - port: 9093 #service port 
+    targetPort: blog-ghost-port
+    protocol: TCP
+  selector:
+    app: blog-ghost
+  type: NodePort
+  #As no nodePort is specified, random port number is assigned.
